@@ -124,7 +124,7 @@ jobs:
         lines = []
         if vulns:
             total = sum(len(i["vulns"]) for i in vulns)
-            lines.append(f"### 🔒 pip-audit: {total} vulnerabilidades detectadas en {len(vulns)} paquetes\n")
+            lines.append(f"### pip-audit: {total} vulnerabilidades detectadas en {len(vulns)} paquetes\n")
             lines.append("| Paquete | Versión | Vulnerabilidad | Severidad | ID |\n")
             lines.append("|---|---:|---|---|---|\n")
             for item in vulns:
@@ -138,9 +138,3 @@ jobs:
             with open(summary_path, "a", encoding="utf-8") as f:
                 f.writelines(lines)
         PY
-
-    - name: Upload pip-audit SARIF to GitHub Security (3.12 only)
-      if: matrix.python-version == '3.12'
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: pip-audit.sarif
