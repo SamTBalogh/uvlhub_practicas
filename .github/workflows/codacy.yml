@@ -102,45 +102,56 @@ jobs:
         coverage xml
         python-codacy-coverage -r coverage.xml
 
-    # Análisis de seguridad con pip-audit (solo 3.12)
-    - name: Security audit with pip-audit (SARIF + summary)
+    - name: Security audit with pip-audit (stdout -> summary)
       if: matrix.python-version == '3.12'
-      continue-on-error: true   # ← no falla el job si hay vulnerabilidades
+      continue-on-error: true
       run: |
         pip install pip-audit
-        # Genera SARIF para Code scanning
-        pip-audit -f sarif -o pip-audit.sarif
-        # Genera JSON para hacer un resumen legible
-        pip-audit -f json -o pip-audit.json || true
         python - <<'PY'
-        import json, os
+        import json, os, subprocess
+
+        def load_results():
+            # Ejecuta pip-audit y captura JSON por stdout
+            result = subprocess.run(
+                ["pip-audit", "-f", "json", "--progress-spinner", "off"],
+                check=False, capture_output=True, text=True
+            )
+            raw = (result.stdout or "").strip()
+            if not raw:
+                return []
+            try:
+                data = json.loads(raw)
+            except json.JSONDecodeError:
+                return []
+            # Soportar ambos formatos:
+            # 1) Lista de dependencias
+            # 2) Objeto {"dependencies": [...], ...}
+            if isinstance(data, dict):
+                return data.get("dependencies", [])
+            if isinstance(data, list):
+                return data
+            return []
+
+        deps = load_results()
+        # Filtra solo dependencias con vulnerabilidades
+        vulns = [d for d in deps if isinstance(d, dict) and d.get("vulns")]
+
         summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
-        try:
-            with open("pip-audit.json", "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except Exception:
-            data = []
-        vulns = [i for i in data if i.get("vulns")]
         lines = []
         if vulns:
-            total = sum(len(i["vulns"]) for i in vulns)
-            lines.append(f"### 🔒 pip-audit: {total} vulnerabilidades detectadas en {len(vulns)} paquetes\n")
+            total = sum(len(d["vulns"]) for d in vulns)
+            lines.append(f"### pip-audit: {total} vulnerabilidades detectadas en {len(vulns)} paquetes\n")
             lines.append("| Paquete | Versión | Vulnerabilidad | Severidad | ID |\n")
             lines.append("|---|---:|---|---|---|\n")
-            for item in vulns:
-                name = item["name"]; version = item["version"]
-                for v in item["vulns"]:
-                    lines.append(f"| {name} | {version} | {v.get('description','-').splitlines()[0][:80]} | {v.get('severity','-')} | {v.get('id','-')} |\n")
-            lines.append("\n> Revisa la pestaña **Security → Code scanning alerts** para detalles.\n")
+            for dep in vulns:
+                name = dep.get("name","-"); version = dep.get("version","-")
+                for v in dep.get("vulns", []):
+                    desc = (v.get("description") or "-").splitlines()[0][:80]
+                    lines.append(f"| {name} | {version} | {desc} | {v.get('severity','-')} | {v.get('id','-')} |\n")
         else:
             lines.append("pip-audit: no se han encontrado vulnerabilidades.\n")
+
         if summary_path:
             with open(summary_path, "a", encoding="utf-8") as f:
                 f.writelines(lines)
         PY
-
-    - name: Upload pip-audit SARIF to GitHub Security (3.12 only)
-      if: matrix.python-version == '3.12'
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: pip-audit.sarif
