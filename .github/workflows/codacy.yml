@@ -127,7 +127,7 @@ jobs:
         lines = []
         if vulns:
             total = sum(len(i["vulns"]) for i in vulns)
-            lines.append(f"### 🔒 pip-audit: {total} vulnerabilidades detectadas en {len(vulns)} paquetes\n")
+            lines.append(f"### pip-audit: {total} vulnerabilidades detectadas en {len(vulns)} paquetes\n")
             lines.append("| Paquete | Versión | Vulnerabilidad | Severidad | ID |\n")
             lines.append("|---|---:|---|---|---|\n")
             for item in vulns:
@@ -136,7 +136,7 @@ jobs:
                     desc = (v.get('description') or '-').splitlines()[0][:80]
                     lines.append(f"| {name} | {version} | {desc} | {v.get('severity','-')} | {v.get('id','-')} |\n")
         else:
-            lines.append("✅ pip-audit: no se han encontrado vulnerabilidades.\n")
+            lines.append("pip-audit: no se han encontrado vulnerabilidades.\n")
 
         if summary_path:
             with open(summary_path, "a", encoding="utf-8") as f:
