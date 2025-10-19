@@ -1,0 +1,48 @@
+name: Check Outdated Dependencies
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  outdated-deps:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Check for outdated dependencies
+      run: |
+        python - <<'PY'
+        import json, subprocess, os
+        out = subprocess.check_output(["python","-m","pip","list","--outdated","--format=json"])
+        pkgs = json.loads(out.decode())
+        summary = os.environ.get("GITHUB_STEP_SUMMARY")
+        lines=[]
+        if pkgs:
+            print(f"{len(pkgs)} dependencias desactualizadas encontradas:")
+            for p in pkgs:
+                print(f"::warning title=Outdated dependency::{p['name']} {p['version']} -> {p['latest_version']}")
+            lines.append("### Dependencias desactualizadas\n")
+            lines.append("| Paquete | Instalada | Última |\n|---|---:|---:|\n")
+            for p in pkgs:
+                lines.append(f"| {p['name']} | {p['version']} | {p['latest_version']} |\n")
+        else:
+            lines.append("No se han encontrado dependencias desactualizadas.\n")
+        if summary:
+            with open(summary, "a", encoding="utf-8") as f: f.writelines(lines)
+        PY
