@@ -1,0 +1,64 @@
+name: pip-audit Security Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pip-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install pip-audit (and project deps resolver)
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-audit
+
+    - name: Run pip-audit (stdout -> summary)
+      continue-on-error: true  
+      run: |
+        python - <<'PY'
+        import json, os, subprocess
+        # Usa el manifest directamente; si prefieres auditar instaladas, quita "-r requirements.txt"
+        result = subprocess.run(
+            ["pip-audit", "-r", "requirements.txt", "-f", "json", "--progress-spinner", "off"],
+            check=False, capture_output=True, text=True
+        )
+        raw = (result.stdout or "").strip()
+        try:
+            data = json.loads(raw) if raw else []
+        except json.JSONDecodeError:
+            data = []
+
+        # Formatos posibles: lista o {"dependencies": [...]}
+        deps = data.get("dependencies", []) if isinstance(data, dict) else (data if isinstance(data, list) else [])
+        vulns = [d for d in deps if isinstance(d, dict) and d.get("vulns")]
+
+        summary = os.environ.get("GITHUB_STEP_SUMMARY")
+        lines=[]
+        if vulns:
+            total = sum(len(d["vulns"]) for d in vulns)
+            lines.append(f"### pip-audit: {total} vulnerabilidades en {len(vulns)} paquetes\n")
+            lines.append("| Paquete | Versión | Vulnerabilidad | Severidad | ID |\n|---|---:|---|---|---|\n")
+            for dep in vulns:
+                name = dep.get("name","-"); version = dep.get("version","-")
+                for v in dep.get("vulns", []):
+                    desc = (v.get("description") or "-").splitlines()[0][:80]
+                    lines.append(f"| {name} | {version} | {desc} | {v.get('severity','-')} | {v.get('id','-')} |\n")
+        else:
+            lines.append("pip-audit: no se han encontrado vulnerabilidades.\n")
+
+        if summary:
+            with open(summary, "a", encoding="utf-8") as f: f.writelines(lines)
+        PY
