@@ -102,38 +102,42 @@ jobs:
         coverage xml
         python-codacy-coverage -r coverage.xml
 
-    # Análisis de seguridad con pip-audit (solo 3.12)
-    - name: Security audit with pip-audit (SARIF + summary)
+     # pip-audit (solo Step Summary)
+    - name: Security audit with pip-audit (stdout -> summary)
       if: matrix.python-version == '3.12'
-      continue-on-error: true   # ← no falla el job si hay vulnerabilidades
+      continue-on-error: true
       run: |
         pip install pip-audit
-        # Genera SARIF para Code scanning
-        pip-audit -f sarif -o pip-audit.sarif
-        # Genera JSON para hacer un resumen legible
-        pip-audit -f json -o pip-audit.json || true
         python - <<'PY'
-        import json, os
-        summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+        import json, os, subprocess, sys
+        # Ejecuta pip-audit y captura el JSON desde stdout (sin crear ficheros)
         try:
-            with open("pip-audit.json", "r", encoding="utf-8") as f:
-                data = json.load(f)
+            result = subprocess.run(
+                ["pip-audit", "-f", "json", "--progress-spinner", "off"],
+                check=False, capture_output=True, text=True
+            )
+            # pip-audit puede devolver código !=0 por causas no críticas; no rompemos el job
+            raw = result.stdout.strip() or "[]"
+            data = json.loads(raw)
         except Exception:
             data = []
+
         vulns = [i for i in data if i.get("vulns")]
+        summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
         lines = []
         if vulns:
             total = sum(len(i["vulns"]) for i in vulns)
-            lines.append(f"### pip-audit: {total} vulnerabilidades detectadas en {len(vulns)} paquetes\n")
+            lines.append(f"### 🔒 pip-audit: {total} vulnerabilidades detectadas en {len(vulns)} paquetes\n")
             lines.append("| Paquete | Versión | Vulnerabilidad | Severidad | ID |\n")
             lines.append("|---|---:|---|---|---|\n")
             for item in vulns:
                 name = item["name"]; version = item["version"]
                 for v in item["vulns"]:
-                    lines.append(f"| {name} | {version} | {v.get('description','-').splitlines()[0][:80]} | {v.get('severity','-')} | {v.get('id','-')} |\n")
-            lines.append("\n> Revisa la pestaña **Security → Code scanning alerts** para detalles.\n")
+                    desc = (v.get('description') or '-').splitlines()[0][:80]
+                    lines.append(f"| {name} | {version} | {desc} | {v.get('severity','-')} | {v.get('id','-')} |\n")
         else:
-            lines.append("pip-audit: no se han encontrado vulnerabilidades.\n")
+            lines.append("✅ pip-audit: no se han encontrado vulnerabilidades.\n")
+
         if summary_path:
             with open(summary_path, "a", encoding="utf-8") as f:
                 f.writelines(lines)
