@@ -45,7 +45,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # 🔎 Solo en 3.12 para no duplicar avisos
+    # Solo en 3.12 para no duplicar avisos
     - name: Check for outdated dependencies
       if: matrix.python-version == '3.12'
       run: |
@@ -66,13 +66,13 @@ jobs:
                 lines.append(f"| {p['name']} | {p['version']} | {p['latest_version']} | {p.get('latest_filetype','-')} |\n")
         else:
             print("No se han encontrado dependencias desactualizadas.")
-            lines.append("✅ No se han encontrado dependencias desactualizadas.\n")
+            lines.append("No se han encontrado dependencias desactualizadas.\n")
         if summary_path:
             with open(summary_path, "a", encoding="utf-8") as f:
                 f.writelines(lines)
         PY
 
-    # ✅ Ejecuta tests en todas las versiones para verificar compatibilidad
+    # Tests en todas las versiones para compatibilidad
     - name: Run tests (no coverage)
       if: matrix.python-version != '3.12'
       env:
@@ -85,7 +85,7 @@ jobs:
       run: |
         pytest app/modules/ --ignore-glob='*selenium*' -q
 
-    # 📈 Solo en 3.12: cobertura y envío a Codacy para evitar duplicados
+    # Solo en 3.12: cobertura + Codacy
     - name: Coverage & upload to Codacy (3.12 only)
       if: matrix.python-version == '3.12'
       env:
@@ -102,3 +102,45 @@ jobs:
         coverage xml
         python-codacy-coverage -r coverage.xml
 
+    # Análisis de seguridad con pip-audit (solo 3.12)
+    - name: Security audit with pip-audit (SARIF + summary)
+      if: matrix.python-version == '3.12'
+      continue-on-error: true   # ← no falla el job si hay vulnerabilidades
+      run: |
+        pip install pip-audit
+        # Genera SARIF para Code scanning
+        pip-audit -f sarif -o pip-audit.sarif
+        # Genera JSON para hacer un resumen legible
+        pip-audit -f json -o pip-audit.json || true
+        python - <<'PY'
+        import json, os
+        summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+        try:
+            with open("pip-audit.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = []
+        vulns = [i for i in data if i.get("vulns")]
+        lines = []
+        if vulns:
+            total = sum(len(i["vulns"]) for i in vulns)
+            lines.append(f"### 🔒 pip-audit: {total} vulnerabilidades detectadas en {len(vulns)} paquetes\n")
+            lines.append("| Paquete | Versión | Vulnerabilidad | Severidad | ID |\n")
+            lines.append("|---|---:|---|---|---|\n")
+            for item in vulns:
+                name = item["name"]; version = item["version"]
+                for v in item["vulns"]:
+                    lines.append(f"| {name} | {version} | {v.get('description','-').splitlines()[0][:80]} | {v.get('severity','-')} | {v.get('id','-')} |\n")
+            lines.append("\n> Revisa la pestaña **Security → Code scanning alerts** para detalles.\n")
+        else:
+            lines.append("pip-audit: no se han encontrado vulnerabilidades.\n")
+        if summary_path:
+            with open(summary_path, "a", encoding="utf-8") as f:
+                f.writelines(lines)
+        PY
+
+    - name: Upload pip-audit SARIF to GitHub Security (3.12 only)
+      if: matrix.python-version == '3.12'
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: pip-audit.sarif
