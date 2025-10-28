@@ -20,9 +20,7 @@ def test_webhook_index():
         time.sleep(4)
 
         try:
-
             pass
-
         except NoSuchElementException:
             raise AssertionError("Test failed!")
 
