@@ -1,0 +1,62 @@
+name: Sub-issue
+description: Tarea atómica de un issue padre
+title: "[SUB] "
+labels: ["sub-issue", "status:needs-review"]
+body:
+  - type: input
+    id: parent
+    attributes:
+      label: Issue padre (obligatorio)
+      description: Número o URL del issue principal del que cuelga.
+      placeholder: "#123 o https://github.com/org/repo/issues/123"
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Objetivo concreto
+      description: Resultado único, verificable y acotado.
+      placeholder: "Ej: Añadir step X al workflow Y y validar que pasa en main."
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Alcance
+      placeholder: "- Incluye...\n- No incluye..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criterios de aceptación (DoD)
+      value: "- [ ] \n- [ ] \n- [ ] "
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencias / bloqueos
+      placeholder: "Ej: Bloqueado por #456, requiere decisión en #789."
+    validations:
+      required: false
+
+  - type: input
+    id: estimate
+    attributes:
+      label: Estimación
+      placeholder: "Ej: XS, S, M, L o 1h, 0.5d, 1d"
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notas técnicas
+      placeholder: "Rutas de archivos, comandos, decisiones relevantes."
+    validations:
+      required: false

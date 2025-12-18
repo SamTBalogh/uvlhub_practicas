@@ -1,0 +1,28 @@
+name: Fix
+description: Arreglo concreto o ajuste puntual
+title: "[FIX] "
+labels: ["fix", "status:needs-review"]
+body:
+  - type: textarea
+    id: que
+    attributes:
+      label: Qué se va a arreglar
+      placeholder: "Descripción corta y precisa."
+    validations:
+      required: true
+
+  - type: textarea
+    id: criterio
+    attributes:
+      label: Criterio de aceptación
+      placeholder: "Cómo se valida que está arreglado."
+    validations:
+      required: true
+
+  - type: textarea
+    id: impacto
+    attributes:
+      label: Impacto / riesgo
+      placeholder: "Qué puede romperse o qué tocar con cuidado."
+    validations:
+      required: false

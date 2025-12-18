@@ -1,0 +1,28 @@
+name: Style / Chore
+description: Formateo, lint, limpieza, mantenimiento, refactor menor sin cambio funcional
+title: "[CHORE] "
+labels: ["chore", "style", "status:needs-review"]
+body:
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripción
+      placeholder: "Qué se quiere limpiar/mejorar (sin cambiar funcionalidad)."
+    validations:
+      required: true
+
+  - type: textarea
+    id: cambios
+    attributes:
+      label: Cambios propuestos
+      value: "- [ ] \n- [ ] \n- [ ] "
+    validations:
+      required: false
+
+  - type: input
+    id: herramientas
+    attributes:
+      label: Herramientas implicadas
+      placeholder: "Ej: eslint, prettier, black, ruff, clang-format"
+    validations:
+      required: false

@@ -1,0 +1,56 @@
+name: Docs
+description: Cambios de documentación
+title: "[DOCS] "
+labels: ["docs", "status:needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: "Usar esta issue para trabajo exclusivo de documentación."
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      description: Seleccionar la etiqueta de prioridad a aplicar.
+      options:
+        - priority:critical
+        - priority:high
+        - priority:medium
+        - priority:low
+        - priority:backlog
+    validations:
+      required: true
+
+  - type: textarea
+    id: resumen
+    attributes:
+      label: Resumen
+      description: Qué hay que cambiar en la documentación y por qué.
+      placeholder: "Describir el objetivo y el motivo del cambio."
+    validations:
+      required: true
+
+  - type: textarea
+    id: ubicacion
+    attributes:
+      label: Ubicación
+      description: Dónde debe hacerse el cambio.
+      placeholder: "Ej: README.md, docs/..., /api/docs, wiki..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      value: "- [ ] El contenido es correcto y está actualizado\n- [ ] Los enlaces funcionan\n- [ ] Ortografía y formato revisados"
+    validations:
+      required: true
+
+  - type: input
+    id: referencias
+    attributes:
+      label: Referencias
+      placeholder: "Enlaces a issues relacionadas, especificaciones, capturas..."
+    validations:
+      required: false
