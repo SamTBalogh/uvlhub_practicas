@@ -1,0 +1,57 @@
+name: OWASP Dependency-Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  security-events: write
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Dependency-Check properties
+        run: |
+          cat > dependency-check.properties <<'EOF'
+          analyzer.ossindex.user=${{ secrets.OSSINDEX_USERNAME }}
+          analyzer.ossindex.password=${{ secrets.OSSINDEX_TOKEN }}
+          EOF
+
+      - name: Run OWASP Dependency-Check (SARIF)
+        id: dc
+        continue-on-error: true
+        uses: dependency-check/Dependency-Check_Action@2ba636726705b0f74f126ebeaacaf2ad4600b967
+        with:
+          project: "uvlhub_practicas"
+          path: "."
+          format: "SARIF"
+          out: "dependency-check-report"
+          args: >
+            -P dependency-check.properties
+            --failOnCVSS 7
+            --enableRetired
+
+      - name: Upload SARIF to GitHub Security (Code Scanning)
+        if: ${{ always() }}
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: dependency-check-report/dependency-check-report.sarif
+          category: dependency-check
+
+      - name: Fail if CVSS threshold hit
+        if: ${{ steps.dc.outcome == 'failure' }}
+        run: exit 1
+
+      - name: Cleanup properties
+        if: ${{ always() }}
+        run: rm -f dependency-check.properties

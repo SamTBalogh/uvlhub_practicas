@@ -1,0 +1,40 @@
+name: Tarea
+description: Trabajo planificado
+title: "[TASK] "
+labels: ["task", "status:needs-review"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: Qué se quiere conseguir.
+      placeholder: "Ej: Implementar X para habilitar Y."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alcance
+    attributes:
+      label: Alcance
+      description: Qué entra y qué no entra.
+      placeholder: "- Incluye...\n- No incluye..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Pasos concretos.
+      value: "- [ ] \n- [ ] \n- [ ] "
+    validations:
+      required: true
+
+  - type: input
+    id: referencia
+    attributes:
+      label: Referencias
+      description: Links a PRs, docs, issues relacionadas.
+      placeholder: "Ej: #123, enlace a documentación"
+    validations:
+      required: false

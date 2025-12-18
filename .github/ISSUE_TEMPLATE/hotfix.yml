@@ -1,0 +1,84 @@
+name: Hotfix
+description: Corrección urgente
+title: "[HOTFIX] "
+labels: ["hotfix", "status:needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: "Usar esta issue para correcciones urgentes que deben aplicarse en main cuanto antes."
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      description: Seleccionar la etiqueta de prioridad a aplicar.
+      options:
+        - priority:critical
+        - priority:high
+        - priority:medium
+        - priority:low
+        - priority:backlog
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impacto
+    attributes:
+      label: Impacto
+      options:
+        - "Producción caída"
+        - "Funcionalidad principal rota"
+        - "Servicio degradado"
+        - "Incidencia menor pero urgente"
+    validations:
+      required: true
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripción del problema
+      placeholder: "Qué está fallando en producción y desde cuándo."
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigacion
+    attributes:
+      label: Mitigación o workaround actual
+      placeholder: "Existe un parche temporal o alternativa?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Pasos para reproducir (si aplica)
+      placeholder: "1) ...\n2) ...\n3) ..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: plan
+    attributes:
+      label: Plan de corrección
+      placeholder: "Qué se va a cambiar, dónde y por qué."
+    validations:
+      required: true
+
+  - type: textarea
+    id: verificacion
+    attributes:
+      label: Verificación
+      value: "- [ ] Se reproduce el fallo\n- [ ] Se valida el arreglo en local\n- [ ] CI pasa\n- [ ] Se verifica tras desplegar"
+    validations:
+      required: true
+
+  - type: textarea
+    id: rama
+    attributes:
+      label: Instrucciones de rama
+      description: Mantener consistencia con la estrategia de branching.
+      value: "Crear rama desde main: hotfix/<scope>-<short-slug>"
+    validations:
+      required: true
+
