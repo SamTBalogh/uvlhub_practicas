@@ -11,11 +11,12 @@ jobs:
   label:
     runs-on: ubuntu-latest
     steps:
-      - name: Apply status:needs-review and priority label
+      - name: Apply status, type and priority labels from Issue Form
         uses: actions/github-script@v7
         with:
           script: |
             const STATUS_LABEL = "status:needs-review";
+
             const PRIORITY_LABELS = [
               "priority:critical",
               "priority:high",
@@ -24,48 +25,80 @@ jobs:
               "priority:backlog",
             ];
 
+            const TYPE_LABELS = [
+              "type:documentation",
+              "type:bug",
+              "type:enhancement",
+              "type:refactor",
+              "type:chore",
+            ];
+
             const issue = context.payload.issue;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const issue_number = issue.number;
 
-            const currentLabels = (issue.labels || []).map(l => l.name);
-
-            // Ensure status label
-            if (!currentLabels.includes(STATUS_LABEL)) {
-              await github.rest.issues.addLabels({
-                owner, repo, issue_number,
-                labels: [STATUS_LABEL],
-              });
-            }
-
-            // Extract selected priority from Issue Form body
             const body = issue.body || "";
-            const m = body.match(/### Priority\s+([\s\S]*?)(?:\n### |\n$)/);
-            const picked = m ? m[1].trim().split("\n").find(l => l.trim().length > 0)?.trim() : null;
+            const currentLabels = new Set((issue.labels || []).map(l => l.name));
 
-            if (!picked || !PRIORITY_LABELS.includes(picked)) {
-              return; // No valid priority found
+            const addLabel = async (label) => {
+              if (currentLabels.has(label)) return;
+              await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [label] });
+              currentLabels.add(label);
+            };
+
+            const removeLabel = async (label) => {
+              if (!currentLabels.has(label)) return;
+              try {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number, name: label });
+              } catch (e) {}
+              currentLabels.delete(label);
+            };
+
+            const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+            const extractSectionValue = (heading) => {
+              const re = new RegExp(
+                `^###\\s+${escapeRegExp(heading)}\\s*$\\n([\\s\\S]*?)(?=\\n###\\s|$)`,
+                "mi"
+              );
+              const m = body.match(re);
+              if (!m || !m[1]) return null;
+              return m[1]
+                .split("\n")
+                .map(x => x.trim())
+                .filter(Boolean)[0] || null;
+            };
+
+            // Read values from the Issue Form (ideal path)
+            const pickedTypeValue = extractSectionValue("Type");        // e.g. "type:documentation"
+            const pickedPriority = extractSectionValue("Priority");     // e.g. "priority:high"
+
+            // 0) If Priority is missing for any reason, default to backlog
+            if (!pickedPriority) {
+              await addLabel("priority:backlog");
             }
 
-            // Remove any other priority labels
-            for (const l of currentLabels) {
-              if (PRIORITY_LABELS.includes(l) && l !== picked) {
-                try {
-                  await github.rest.issues.removeLabel({
-                    owner, repo, issue_number,
-                    name: l,
-                  });
-                } catch (e) {
-                  // ignore
-                }
+            // 1) Apply priority label (single-choice)
+            if (pickedPriority && PRIORITY_LABELS.includes(pickedPriority)) {
+              for (const l of PRIORITY_LABELS) if (l !== pickedPriority) await removeLabel(l);
+              await addLabel(pickedPriority);
+            }
+
+            // 2) status:needs-review is default, but removed once ANY priority is set
+            if (!pickedPriority) {
+              await addLabel(STATUS_LABEL);
+            } else {
+              await removeLabel(STATUS_LABEL);
+            }
+
+            // 3) Apply type label (single-choice). Map type:feature -> type:enhancement
+            if (pickedTypeValue) {
+              const mappedType =
+                pickedTypeValue === "type:feature" ? "type:enhancement" : pickedTypeValue;
+
+              if (TYPE_LABELS.includes(mappedType)) {
+                for (const l of TYPE_LABELS) if (l !== mappedType) await removeLabel(l);
+                await addLabel(mappedType);
               }
-            }
-
-            // Add picked priority label if missing
-            if (!currentLabels.includes(picked)) {
-              await github.rest.issues.addLabels({
-                owner, repo, issue_number,
-                labels: [picked],
-              });
             }

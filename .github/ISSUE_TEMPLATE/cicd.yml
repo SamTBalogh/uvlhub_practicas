@@ -1,45 +1,78 @@
 name: CI/CD
-description: Problemas o mejoras en pipelines, workflows y despliegue
+description: Pipeline, workflow, and deployment issues or improvements
 title: "[CI/CD] "
-labels: ["ci/cd", "status:needs-review"]
+labels: ["ci/cd", "type:feature", "status:needs-review"]
+
 body:
-  - type: textarea
-    id: contexto
+  - type: markdown
     attributes:
-      label: Contexto
-      placeholder: "Qué workflow/job falla o qué se quiere mejorar."
+      value: "Use this issue for CI/CD work: workflows, pipelines, build/test jobs, and deployment automation."
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      description: Select the CI/CD work type.
+      options:
+        - type:feature
+        - type:bug
+        - type:chore
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Select the priority label to apply.
+      options:
+        - priority:critical
+        - priority:high
+        - priority:medium
+        - priority:low
+        - priority:backlog
+      default: 4
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      placeholder: "Which workflow/job fails, or what should be improved/created?"
     validations:
       required: true
 
   - type: input
-    id: workflow
+    id: workflow_job
     attributes:
       label: Workflow / Job
-      placeholder: "Ej: .github/workflows/ci.yml -> test"
+      placeholder: "E.g., .github/workflows/ci.yml -> test"
     validations:
       required: true
 
   - type: input
     id: run_url
     attributes:
-      label: Link al run
-      placeholder: "URL del run de GitHub Actions"
+      label: Run link
+      placeholder: "GitHub Actions run URL"
     validations:
       required: false
 
   - type: textarea
-    id: error
+    id: main_error
     attributes:
-      label: Error principal
+      label: Main error
       render: shell
-      placeholder: "Pegar el error clave."
+      placeholder: "Paste the key error."
     validations:
       required: true
 
   - type: textarea
-    id: propuesta
+    id: proposed_change
     attributes:
-      label: Propuesta de cambio
-      placeholder: "Qué se cambiaría y por qué."
+      label: Proposed change
+      placeholder: "What would change and why?"
     validations:
       required: false
