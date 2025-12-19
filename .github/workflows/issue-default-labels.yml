@@ -28,7 +28,7 @@ jobs:
             const TYPE_LABELS = [
               "type:documentation",
               "type:bug",
-              "type:enhancement",
+              "type:feature",
               "type:refactor",
               "type:chore",
             ];
