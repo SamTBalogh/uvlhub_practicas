@@ -1,84 +1,97 @@
 name: Hotfix
-description: Corrección urgente
+description: Urgent production fix to be applied to main ASAP
 title: "[HOTFIX] "
-labels: ["hotfix", "status:needs-review"]
+labels: ["hotfix", "type:bug", "status:needs-review"]
+
 body:
   - type: markdown
     attributes:
-      value: "Usar esta issue para correcciones urgentes que deben aplicarse en main cuanto antes."
+      value: "Use this issue for urgent fixes that must be applied to main as soon as possible."
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      description: Hotfixes are always bug-related.
+      options:
+        - type:bug
+      default: 0
+    validations:
+      required: true
 
   - type: dropdown
     id: priority
     attributes:
-      label: Prioridad
-      description: Seleccionar la etiqueta de prioridad a aplicar.
+      label: Priority
+      description: Select the priority label to apply.
       options:
         - priority:critical
         - priority:high
         - priority:medium
         - priority:low
         - priority:backlog
+      default: 0
     validations:
       required: true
 
   - type: dropdown
-    id: impacto
+    id: impact
     attributes:
-      label: Impacto
+      label: Impact
+      description: Select the real-world impact of the incident.
       options:
-        - "Producción caída"
-        - "Funcionalidad principal rota"
-        - "Servicio degradado"
-        - "Incidencia menor pero urgente"
+        - "Production down"
+        - "Core functionality broken"
+        - "Service degraded"
+        - "Minor incident but urgent"
     validations:
       required: true
 
   - type: textarea
-    id: descripcion
+    id: description
     attributes:
-      label: Descripción del problema
-      placeholder: "Qué está fallando en producción y desde cuándo."
+      label: Problem description
+      placeholder: "What is failing in production and since when?"
     validations:
       required: true
 
   - type: textarea
-    id: mitigacion
+    id: mitigation
     attributes:
-      label: Mitigación o workaround actual
-      placeholder: "Existe un parche temporal o alternativa?"
+      label: Current mitigation / workaround
+      placeholder: "Is there a temporary patch or alternative?"
     validations:
       required: false
 
   - type: textarea
-    id: pasos
+    id: steps
     attributes:
-      label: Pasos para reproducir (si aplica)
+      label: Steps to reproduce (if applicable)
       placeholder: "1) ...\n2) ...\n3) ..."
     validations:
       required: false
 
   - type: textarea
-    id: plan
+    id: fix_plan
     attributes:
-      label: Plan de corrección
-      placeholder: "Qué se va a cambiar, dónde y por qué."
+      label: Fix plan
+      placeholder: "What will be changed, where, and why."
     validations:
       required: true
 
   - type: textarea
-    id: verificacion
+    id: verification
     attributes:
-      label: Verificación
-      value: "- [ ] Se reproduce el fallo\n- [ ] Se valida el arreglo en local\n- [ ] CI pasa\n- [ ] Se verifica tras desplegar"
+      label: Verification
+      value: "- [ ] Issue is reproducible\n- [ ] Fix validated locally\n- [ ] CI passes\n- [ ] Verified after deployment"
     validations:
       required: true
 
   - type: textarea
-    id: rama
+    id: branch_instructions
     attributes:
-      label: Instrucciones de rama
-      description: Mantener consistencia con la estrategia de branching.
-      value: "Crear rama desde main: hotfix/<scope>-<short-slug>"
+      label: Branch instructions
+      description: Keep consistency with the branching strategy.
+      value: "Create branch from main: hotfix/<scope>-<short-slug>"
     validations:
       required: true
-

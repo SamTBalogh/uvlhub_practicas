@@ -1,56 +1,68 @@
 name: Docs
-description: Cambios de documentación
+description: Documentation changes
 title: "[DOCS] "
-labels: ["docs", "status:needs-review"]
+labels: ["docs", "type:documentation", "status:needs-review"]
 body:
   - type: markdown
     attributes:
-      value: "Usar esta issue para trabajo exclusivo de documentación."
+      value: "Use this issue for documentation-only work."
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      description: Classify the type of change.
+      options:
+        - type:documentation
+      default: 0
+    validations:
+      required: true
 
   - type: dropdown
     id: priority
     attributes:
-      label: Prioridad
-      description: Seleccionar la etiqueta de prioridad a aplicar.
+      label: Priority
+      description: Select the priority label to apply.
       options:
         - priority:critical
         - priority:high
         - priority:medium
         - priority:low
         - priority:backlog
+      default: 4
     validations:
       required: true
 
   - type: textarea
-    id: resumen
+    id: summary
     attributes:
-      label: Resumen
-      description: Qué hay que cambiar en la documentación y por qué.
-      placeholder: "Describir el objetivo y el motivo del cambio."
+      label: Summary
+      description: What needs to change in the documentation and why.
+      placeholder: "Describe the goal and the reason for the change."
     validations:
       required: true
 
   - type: textarea
-    id: ubicacion
+    id: location
     attributes:
-      label: Ubicación
-      description: Dónde debe hacerse el cambio.
-      placeholder: "Ej: README.md, docs/..., /api/docs, wiki..."
+      label: Location
+      description: Where the change should be made.
+      placeholder: "E.g., README.md, docs/..., /api/docs, wiki..."
     validations:
       required: true
 
   - type: textarea
-    id: criterios
+    id: acceptance_criteria
     attributes:
-      label: Criterios de aceptación
-      value: "- [ ] El contenido es correcto y está actualizado\n- [ ] Los enlaces funcionan\n- [ ] Ortografía y formato revisados"
+      label: Acceptance criteria
+      value: "- [ ] Content is correct and up to date\n- [ ] Links work\n- [ ] Spelling and formatting reviewed"
     validations:
       required: true
 
-  - type: input
-    id: referencias
+  - type: textarea
+    id: references
     attributes:
-      label: Referencias
-      placeholder: "Enlaces a issues relacionadas, especificaciones, capturas..."
+      label: References
+      placeholder: "Links to related issues, specs, screenshots..."
     validations:
       required: false
