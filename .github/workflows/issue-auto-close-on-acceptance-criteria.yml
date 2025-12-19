@@ -22,41 +22,46 @@ jobs:
             const repo = context.repo.repo;
             const issue_number = context.payload.issue.number;
 
+            console.log(`ref=${context.ref} sha=${context.sha} action=${context.payload.action}`);
+
             const { data: issueData } = await github.rest.issues.get({ owner, repo, issue_number });
             const body = issueData.body || "";
+            const lines = body.split(/\r?\n/);
 
-            const HEADING = "Acceptance criteria";
-            const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const acHeadingRe = /^\s*###\s+Acceptance criteria\s*$/i;
 
-            const extractSectionText = (heading) => {
-              // permite "### Acceptance criteria" y también "### Acceptance criteria:" por si acaso
-              const re = new RegExp(
-                `^###\\s+${escapeRegExp(heading)}\\s*:?\s*$\\r?\\n([\\s\\S]*?)(?=\\r?\\n###\\s|$)`,
-                "mi"
-              );
-              const m = body.match(re);
-              return m?.[1]?.trim() ?? null;
-            };
+            const start = lines.findIndex(l => acHeadingRe.test(l));
+            if (start === -1) {
+              console.log("No Acceptance criteria heading found");
+              return;
+            }
 
-            const section = extractSectionText(HEADING);
-            if (!section) return;
+            let inCode = false;
+            let total = 0;
+            let unchecked = 0;
 
-            // Formato garantizado: "- [x] " y "- [ ] "
-            const taskRe = /^\s*-\s*\[(?: |x|X)\]\s+/gm;
-            const uncheckedRe = /^\s*-\s*\[ \]\s+/gm;
+            // Formato garantizado: "- [x]" o "- [ ]"
+            const taskRe = /^\s*-\s*\[([^\]])\]/;
 
-            const tasks = section.match(taskRe) ?? [];
-            const unchecked = section.match(uncheckedRe) ?? [];
+            // Escaneamos desde el heading hasta el final (sin recortar por otros ###)
+            for (let i = start + 1; i < lines.length; i++) {
+              const line = lines[i];
 
-            console.log(`Acceptance criteria tasks detected: ${tasks.length}`);
-            console.log(`Unchecked tasks detected: ${unchecked.length}`);
+              if (/^\s*```/.test(line)) { inCode = !inCode; continue; }
+              if (inCode) continue;
 
-            if (tasks.length === 0) return;     // no hay nada que autocerrar
-            if (unchecked.length > 0) return;   // queda alguna sin marcar
+              const m = line.match(taskRe);
+              if (!m) continue;
 
-            await github.rest.issues.update({
-              owner,
-              repo,
-              issue_number,
-              state: "closed",
-            });
+              total += 1;
+
+              const mark = (m[1] || "").trim().toLowerCase(); // si no es "x", NO está marcada
+              if (mark !== "x") unchecked += 1;
+            }
+
+            console.log(`AC tasks detected=${total} unchecked=${unchecked}`);
+
+            if (total === 0) return;
+            if (unchecked > 0) return;
+
+            await github.rest.issues.update({ owner, repo, issue_number, state: "closed" });
