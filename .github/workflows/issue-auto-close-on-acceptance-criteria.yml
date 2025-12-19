@@ -16,17 +16,25 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const issue = context.payload.issue;
+            // IMPORTANT: do not autoclose on "reopened"
+            if (context.payload.action === "reopened") return;
+
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const issue_number = issue.number;
+            const issue_number = context.payload.issue.number;
 
-            const body = issue.body || "";
+            // Always fetch the latest body from the API
+            const { data: issueData } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number,
+            });
+
+            const body = issueData.body || "";
             const HEADING = "Acceptance criteria";
 
             const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-            // Extract full section text under "### Acceptance criteria" until next "### "
             const extractSectionText = (heading) => {
               const re = new RegExp(
                 `^###\\s+${escapeRegExp(heading)}\\s*$\\n([\\s\\S]*?)(?=\\n###\\s|$)`,
@@ -40,12 +48,15 @@ jobs:
             if (!section) return;
 
             const lines = section.split("\n");
-            const taskLineRe = /^\s*[-*+]\s+\[( |x|X)\]\s+/;
+
+            // More permissive task detection (accepts "- [ ]foo" and "- [ ] foo")
+            const taskLineRe = /^\s*[-*+]\s*\[( |x|X)\]\s*/;
+            const uncheckedRe = /^\s*[-*+]\s*\[\s*\]\s*/;
 
             const taskLines = lines.filter(l => taskLineRe.test(l));
             if (taskLines.length === 0) return;
 
-            const hasUnchecked = taskLines.some(l => /^\s*[-*+]\s+\[\s\]\s+/.test(l));
+            const hasUnchecked = taskLines.some(l => uncheckedRe.test(l));
             if (hasUnchecked) return;
 
             await github.rest.issues.update({

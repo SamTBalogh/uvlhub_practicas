@@ -62,6 +62,14 @@ body:
       value: "- [ ] \n- [ ] \n- [ ] "
     validations:
       required: true
+  
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      value: "- [ ] Work is implemented\n- [ ] Requirements are met\n- [ ] Verified complete\n- [ ] No regressions introduced"
+    validations:
+      required: true
 
   - type: textarea
     id: references
