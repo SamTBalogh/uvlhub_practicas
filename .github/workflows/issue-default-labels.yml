@@ -70,23 +70,21 @@ jobs:
                 .filter(Boolean)[0] || null;
             };
 
-            // Read values from the Issue Form (ideal path)
+            // Read values from the Issue Form
             const pickedTypeValue = extractSectionValue("Type");        // e.g. "type:feature"
             const pickedPriority = extractSectionValue("Priority");     // e.g. "priority:high"
 
-            // 0) If Priority is missing for any reason, default to backlog label
-            if (!pickedPriority) {
-              await addLabel("priority:backlog");
-            }
+            // Priority fallback: backlog means "not triaged yet"
+            const effectivePriority = (pickedPriority && PRIORITY_LABELS.includes(pickedPriority))
+              ? pickedPriority
+              : "priority:backlog";
 
             // 1) Apply priority label (single-choice)
-            if (pickedPriority && PRIORITY_LABELS.includes(pickedPriority)) {
-              for (const l of PRIORITY_LABELS) if (l !== pickedPriority) await removeLabel(l);
-              await addLabel(pickedPriority);
-            }
+            for (const l of PRIORITY_LABELS) if (l !== effectivePriority) await removeLabel(l);
+            await addLabel(effectivePriority);
 
-            // 2) status:needs-review is default, but removed once ANY priority is set
-            if (!pickedPriority) {
+            // 2) status:needs-review stays while backlog, removed otherwise
+            if (effectivePriority === "priority:backlog") {
               await addLabel(STATUS_LABEL);
             } else {
               await removeLabel(STATUS_LABEL);
@@ -97,4 +95,3 @@ jobs:
               for (const l of TYPE_LABELS) if (l !== pickedTypeValue) await removeLabel(l);
               await addLabel(pickedTypeValue);
             }
-
