@@ -45,20 +45,20 @@ body:
       required: true
 
   - type: textarea
-    id: acceptance_criteria
-    attributes:
-      label: Acceptance criteria
-      value: "- [ ] The change is implemented\n- [ ] Verified resolved / improved\n- [ ] No regressions introduced"
-    validations:
-      required: true
-
-  - type: textarea
     id: impact
     attributes:
       label: Impact / risk
       placeholder: "What could break, affected components, or anything to handle carefully."
     validations:
       required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      value: "- [ ] The change is implemented\n- [ ] Verified resolved / improved\n- [ ] No regressions introduced"
+    validations:
+      required: true
 
   - type: textarea
     id: references
