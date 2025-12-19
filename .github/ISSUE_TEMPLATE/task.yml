@@ -1,23 +1,56 @@
-name: Tarea
-description: Trabajo planificado
+name: Task
+description: Planned work item
 title: "[TASK] "
-labels: ["task", "status:needs-review"]
+labels: ["task", "type:feature", "status:needs-review"]
+
 body:
-  - type: textarea
-    id: objetivo
+  - type: markdown
     attributes:
-      label: Objetivo
-      description: Qué se quiere conseguir.
-      placeholder: "Ej: Implementar X para habilitar Y."
+      value: "Use this issue for planned work (not an urgent fix)."
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      description: Classify the type of work for this task.
+      options:
+        - type:feature
+        - type:refactor
+        - type:chore
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Select the priority label to apply.
+      options:
+        - priority:critical
+        - priority:high
+        - priority:medium
+        - priority:low
+        - priority:backlog
+      default: 4
     validations:
       required: true
 
   - type: textarea
-    id: alcance
+    id: goal
     attributes:
-      label: Alcance
-      description: Qué entra y qué no entra.
-      placeholder: "- Incluye...\n- No incluye..."
+      label: Goal
+      description: What we want to achieve.
+      placeholder: "E.g., Implement X to enable Y."
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included and what is out of scope.
+      placeholder: "- Includes...\n- Excludes..."
     validations:
       required: true
 
@@ -25,16 +58,16 @@ body:
     id: checklist
     attributes:
       label: Checklist
-      description: Pasos concretos.
+      description: Concrete steps to complete the task.
       value: "- [ ] \n- [ ] \n- [ ] "
     validations:
       required: true
 
-  - type: input
-    id: referencia
+  - type: textarea
+    id: references
     attributes:
-      label: Referencias
-      description: Links a PRs, docs, issues relacionadas.
-      placeholder: "Ej: #123, enlace a documentación"
+      label: References
+      description: Links to related PRs, docs, or issues.
+      placeholder: "E.g., #123, link to documentation"
     validations:
       required: false

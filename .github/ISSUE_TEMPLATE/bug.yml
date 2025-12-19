@@ -1,51 +1,62 @@
 name: Bug
-description: Reporte de fallo reproducible
+description: Reproducible bug report
 title: "[BUG] "
-labels: ["bug", "status:needs-review"]
+labels: ["bug", "type:bug", "status:needs-review"]
+
 body:
-  - type: textarea
-    id: descripcion
+  - type: markdown
     attributes:
-      label: Descripción
-      placeholder: "Qué ocurre y por qué es un problema."
+      value: "Use this issue to report a reproducible bug. Include clear steps and evidence."
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      description: This template is always a bug report.
+      options:
+        - type:bug
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Select the priority label to apply.
+      options:
+        - priority:critical
+        - priority:high
+        - priority:medium
+        - priority:low
+        - priority:backlog
+      default: 4
     validations:
       required: true
 
   - type: textarea
-    id: reproducir
+    id: description
     attributes:
-      label: Pasos para reproducir
+      label: Description
+      placeholder: "What happens and why is it a problem?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to reproduce
       placeholder: "1) ...\n2) ...\n3) ..."
     validations:
       required: true
 
   - type: textarea
-    id: esperado
+    id: expected
     attributes:
-      label: Resultado esperado
+      label: Expected result
+      placeholder: "What should happen?"
     validations:
       required: true
 
   - type: textarea
     id: actual
-    attributes:
-      label: Resultado actual
-    validations:
-      required: true
-
-  - type: input
-    id: entorno
-    attributes:
-      label: Entorno
-      placeholder: "OS, navegador, versión, commit SHA, etc."
-    validations:
-      required: false
-
-  - type: textarea
-    id: logs
-    attributes:
-      label: Logs / capturas
-      render: shell
-      placeholder: "Pegar logs relevantes (sin secretos)."
-    validations:
-      required: false

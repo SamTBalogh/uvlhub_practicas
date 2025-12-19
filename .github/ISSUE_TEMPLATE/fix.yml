@@ -1,28 +1,69 @@
 name: Fix
-description: Arreglo concreto o ajuste puntual
+description: Focused fix or small corrective adjustment
 title: "[FIX] "
 labels: ["fix", "status:needs-review"]
+
 body:
-  - type: textarea
-    id: que
+  - type: markdown
     attributes:
-      label: Qué se va a arreglar
-      placeholder: "Descripción corta y precisa."
+      value: "Use this issue for a focused fix or a small adjustment (bug fix, refactor, or chore)."
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      description: Select the work type for this fix.
+      options:
+        - type:bug
+        - type:refactor
+        - type:chore
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Select the priority label to apply.
+      options:
+        - priority:critical
+        - priority:high
+        - priority:medium
+        - priority:low
+        - priority:backlog
+      default: 4
     validations:
       required: true
 
   - type: textarea
-    id: criterio
+    id: what
     attributes:
-      label: Criterio de aceptación
-      placeholder: "Cómo se valida que está arreglado."
+      label: What will be fixed
+      placeholder: "Short and precise description of what needs fixing or adjusting."
     validations:
       required: true
 
   - type: textarea
-    id: impacto
+    id: acceptance_criteria
     attributes:
-      label: Impacto / riesgo
-      placeholder: "Qué puede romperse o qué tocar con cuidado."
+      label: Acceptance criteria
+      value: "- [ ] The change is implemented\n- [ ] Verified resolved / improved\n- [ ] No regressions introduced"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact / risk
+      placeholder: "What could break, affected components, or anything to handle carefully."
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      placeholder: "Links to related issues, logs, screenshots..."
     validations:
       required: false

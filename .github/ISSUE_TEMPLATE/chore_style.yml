@@ -1,28 +1,69 @@
 name: Style / Chore
-description: Formateo, lint, limpieza, mantenimiento, refactor menor sin cambio funcional
+description: Formatting, linting, cleanup, maintenance, minor refactor without functional changes
 title: "[CHORE] "
-labels: ["chore", "style", "status:needs-review"]
+labels: ["chore", "style", "type:chore", "status:needs-review"]
+
 body:
-  - type: textarea
-    id: descripcion
+  - type: markdown
     attributes:
-      label: Descripción
-      placeholder: "Qué se quiere limpiar/mejorar (sin cambiar funcionalidad)."
+      value: "Use this issue for non-functional changes: formatting, linting, cleanup, maintenance, and style-only updates."
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      description: Select the work type for this template.
+      options:
+        - type:chore
+        - type:refactor
+        - type:documentation
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Select the priority label to apply.
+      options:
+        - priority:critical
+        - priority:high
+        - priority:medium
+        - priority:low
+        - priority:backlog
+      default: 4
     validations:
       required: true
 
   - type: textarea
-    id: cambios
+    id: description
     attributes:
-      label: Cambios propuestos
+      label: Description
+      placeholder: "What should be cleaned up or improved (no functional changes)."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_changes
+    attributes:
+      label: Proposed changes
       value: "- [ ] \n- [ ] \n- [ ] "
     validations:
       required: false
 
   - type: input
-    id: herramientas
+    id: tools
     attributes:
-      label: Herramientas implicadas
-      placeholder: "Ej: eslint, prettier, black, ruff, clang-format"
+      label: Tools involved
+      placeholder: "E.g., eslint, prettier, black, ruff, clang-format"
+    validations:
+      required: false
+
+  - type: input
+    id: references
+    attributes:
+      label: References
+      placeholder: "Related issues, docs, or links"
     validations:
       required: false
