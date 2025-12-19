@@ -71,10 +71,10 @@ jobs:
             };
 
             // Read values from the Issue Form (ideal path)
-            const pickedTypeValue = extractSectionValue("Type");        // e.g. "type:documentation"
+            const pickedTypeValue = extractSectionValue("Type");        // e.g. "type:feature"
             const pickedPriority = extractSectionValue("Priority");     // e.g. "priority:high"
 
-            // 0) If Priority is missing for any reason, default to backlog
+            // 0) If Priority is missing for any reason, default to backlog label
             if (!pickedPriority) {
               await addLabel("priority:backlog");
             }
@@ -92,13 +92,9 @@ jobs:
               await removeLabel(STATUS_LABEL);
             }
 
-            // 3) Apply type label (single-choice). Map type:feature -> type:enhancement
-            if (pickedTypeValue) {
-              const mappedType =
-                pickedTypeValue === "type:feature" ? "type:enhancement" : pickedTypeValue;
-
-              if (TYPE_LABELS.includes(mappedType)) {
-                for (const l of TYPE_LABELS) if (l !== mappedType) await removeLabel(l);
-                await addLabel(mappedType);
-              }
+            // 3) Apply type label (single-choice)
+            if (pickedTypeValue && TYPE_LABELS.includes(pickedTypeValue)) {
+              for (const l of TYPE_LABELS) if (l !== pickedTypeValue) await removeLabel(l);
+              await addLabel(pickedTypeValue);
             }
+
