@@ -76,3 +76,12 @@ body:
       placeholder: "What would change and why?"
     validations:
       required: false
+  
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      value: "- [ ] Change is implemented\n- [ ] Workflow/job passes reliably\n- [ ] Failure is resolved or improvement validated\n- [ ] No regressions introduced"
+    validations:
+      required: true
+

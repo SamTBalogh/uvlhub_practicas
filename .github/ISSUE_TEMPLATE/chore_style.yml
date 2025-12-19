@@ -60,6 +60,15 @@ body:
     validations:
       required: false
 
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      value: "- [ ] Change is applied\n- [ ] Lint/format checks pass (if applicable)\n- [ ] No functional behavior changed"
+    validations:
+      required: true
+
+
   - type: input
     id: references
     attributes:

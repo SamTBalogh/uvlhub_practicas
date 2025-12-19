@@ -80,10 +80,10 @@ body:
       required: true
 
   - type: textarea
-    id: verification
+    id: acceptance_criteria
     attributes:
-      label: Verification
-      value: "- [ ] Issue is reproducible\n- [ ] Fix validated locally\n- [ ] CI passes\n- [ ] Verified after deployment"
+      label: Acceptance criteria
+      value: "- [ ] Issue is reproducible\n- [ ] Fix is implemented\n- [ ] CI passes\n- [ ] Verified after deployment\n- [ ] No regressions introduced"
     validations:
       required: true
 
