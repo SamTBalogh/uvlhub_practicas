@@ -1,5 +1,5 @@
-var currentId = 0;
-        var amount_authors = 0;
+let currentId = 0;
+        let amount_authors = 0;
 
         function show_upload_dataset() {
             document.getElementById("upload_dataset").style.display = "block";
@@ -128,107 +128,113 @@ var currentId = 0;
             upload_error.style.display = 'block';
         }
 
+        function validateOrcidFields(formData) {
+            if (!Array.isArray(formData.author_orcid)) {
+                return true;
+            }
+
+            for (let orcid of formData.author_orcid) {
+                orcid = orcid.trim();
+                if (orcid !== '' && !isValidOrcid(orcid)) {
+                    hide_loading();
+                    write_upload_error("ORCID value does not conform to valid format: " + orcid);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function validateNameFields(formData) {
+            if (!Array.isArray(formData.author_name)) {
+                return true;
+            }
+
+            for (let name of formData.author_name) {
+                name = name.trim();
+                if (name === '') {
+                    hide_loading();
+                    write_upload_error("The author's name cannot be empty");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function collectFormData() {
+            const formData = {};
+            ["basic_info_form", "uploaded_models_form"].forEach((formId) => {
+                const form = document.getElementById(formId);
+                const inputs = form.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    if (input.name) {
+                        formData[input.name] = formData[input.name] || [];
+                        formData[input.name].push(input.value);
+                    }
+                });
+            });
+            return formData;
+        }
+
+        function submitDataset(formData) {
+            const csrfToken = document.getElementById('csrf_token').value;
+            const formUploadData = new FormData();
+            formUploadData.append('csrf_token', csrfToken);
+
+            for (let key in formData) {
+                if (formData.hasOwnProperty(key)) {
+                    formUploadData.set(key, formData[key]);
+                }
+            }
+
+            fetch('/dataset/upload', {
+                method: 'POST',
+                body: formUploadData
+            })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Dataset sent successfully');
+                        response.json().then(data => {
+                            console.log(data.message);
+                            window.location.href = "/dataset/list";
+                        });
+                    } else {
+                        response.json().then(data => {
+                            console.error('Error: ' + data.message);
+                            hide_loading();
+                            write_upload_error(data.message);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in POST request:', error);
+                });
+        }
+
         window.onload = function () {
 
             test_zenodo_connection();
 
             document.getElementById('upload_button').addEventListener('click', function () {
-
                 clean_upload_errors();
                 show_loading();
 
                 // check title and description
-                let check = check_title_and_description();
-
-                if (check) {
-                    // process data form
-                    const formData = {};
-
-                    ["basic_info_form", "uploaded_models_form"].forEach((formId) => {
-                        const form = document.getElementById(formId);
-                        const inputs = form.querySelectorAll('input, select, textarea');
-                        inputs.forEach(input => {
-                            if (input.name) {
-                                formData[input.name] = formData[input.name] || [];
-                                formData[input.name].push(input.value);
-                            }
-                        });
-                    });
-
-                    let formDataJson = JSON.stringify(formData);
-                    console.log(formDataJson);
-
-                    const csrfToken = document.getElementById('csrf_token').value;
-                    const formUploadData = new FormData();
-                    formUploadData.append('csrf_token', csrfToken);
-
-                    for (let key in formData) {
-                        if (formData.hasOwnProperty(key)) {
-                            formUploadData.set(key, formData[key]);
-                        }
-                    }
-
-                    let checked_orcid = true;
-                    if (Array.isArray(formData.author_orcid)) {
-                        for (let orcid of formData.author_orcid) {
-                            orcid = orcid.trim();
-                            if (orcid !== '' && !isValidOrcid(orcid)) {
-                                hide_loading();
-                                write_upload_error("ORCID value does not conform to valid format: " + orcid);
-                                checked_orcid = false;
-                                break;
-                            }
-                        }
-                    }
-
-
-                    let checked_name = true;
-                    if (Array.isArray(formData.author_name)) {
-                        for (let name of formData.author_name) {
-                            name = name.trim();
-                            if (name === '') {
-                                hide_loading();
-                                write_upload_error("The author's name cannot be empty");
-                                checked_name = false;
-                                break;
-                            }
-                        }
-                    }
-
-
-                    if (checked_orcid && checked_name) {
-                        fetch('/dataset/upload', {
-                            method: 'POST',
-                            body: formUploadData
-                        })
-                            .then(response => {
-                                if (response.ok) {
-                                    console.log('Dataset sent successfully');
-                                    response.json().then(data => {
-                                        console.log(data.message);
-                                        window.location.href = "/dataset/list";
-                                    });
-                                } else {
-                                    response.json().then(data => {
-                                        console.error('Error: ' + data.message);
-                                        hide_loading();
-
-                                        write_upload_error(data.message);
-
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error in POST request:', error);
-                            });
-                    }
-
-
-                } else {
+                if (!check_title_and_description()) {
                     hide_loading();
+                    return;
                 }
 
+                // collect form data
+                const formData = collectFormData();
+                console.log(JSON.stringify(formData));
 
+                // validate author fields
+                if (!validateOrcidFields(formData) || !validateNameFields(formData)) {
+                    return;
+                }
+
+                // submit dataset
+                submitDataset(formData);
             });
         };
 

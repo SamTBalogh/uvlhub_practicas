@@ -48,6 +48,7 @@ class TestingConfig(Config):
         f"{os.getenv('MARIADB_PORT', '3306')}/"
         f"{os.getenv('MARIADB_TEST_DATABASE', 'default_db')}"
     )
+    # CSRF protection is disabled for testing only - safe as this config is never used in production
     WTF_CSRF_ENABLED = False
 
 

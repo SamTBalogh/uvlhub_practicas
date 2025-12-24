@@ -32,8 +32,8 @@ def calculate_checksum_and_size(file_path):
     file_size = os.path.getsize(file_path)
     with open(file_path, "rb") as file:
         content = file.read()
-        hash_md5 = hashlib.md5(content).hexdigest()
-        return hash_md5, file_size
+        hash_sha256 = hashlib.sha256(content).hexdigest()
+        return hash_sha256, file_size
 
 
 class DataSetService(BaseService):
@@ -138,7 +138,7 @@ class DataSetService(BaseService):
 
     def get_uvlhub_doi(self, dataset: DataSet) -> str:
         domain = os.getenv("DOMAIN", "localhost")
-        return f"http://{domain}/doi/{dataset.ds_meta_data.dataset_doi}"
+        return f"https://{domain}/doi/{dataset.ds_meta_data.dataset_doi}"
 
 
 class AuthorService(BaseService):
