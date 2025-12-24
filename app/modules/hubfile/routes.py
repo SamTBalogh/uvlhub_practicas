@@ -44,10 +44,10 @@ def download_file(file_id):
     resp.set_cookie(
         "file_download_cookie",
         user_cookie,
-        secure=True,        # Only transmit over HTTPS
-        httponly=True,      # Not accessible to JavaScript (XSS protection)
-        samesite="Lax",     # CSRF protection
-        max_age=86400 * 30  # Expire after 30 days
+        secure=True,  # Only transmit over HTTPS
+        httponly=True,  # Not accessible to JavaScript (XSS protection)
+        samesite="Lax",  # CSRF protection
+        max_age=86400 * 30,  # Expire after 30 days
     )
 
     return resp
@@ -96,10 +96,10 @@ def view_file(file_id):
                 response.set_cookie(
                     "view_cookie",
                     user_cookie,
-                    secure=True,        # Only transmit over HTTPS
-                    httponly=True,      # Not accessible to JavaScript (XSS protection)
-                    samesite="Lax",     # CSRF protection
-                    max_age=86400 * 30  # 30 days (reasonable tracking window)
+                    secure=True,  # Only transmit over HTTPS
+                    httponly=True,  # Not accessible to JavaScript (XSS protection)
+                    samesite="Lax",  # CSRF protection
+                    max_age=86400 * 30,  # 30 days (reasonable tracking window)
                 )
 
             return response

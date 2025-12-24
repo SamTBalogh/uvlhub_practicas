@@ -7,16 +7,7 @@ import uuid
 from datetime import datetime, timezone
 from zipfile import ZipFile
 
-from flask import (
-    abort,
-    jsonify,
-    make_response,
-    redirect,
-    render_template,
-    request,
-    send_from_directory,
-    url_for,
-)
+from flask import abort, jsonify, make_response, redirect, render_template, request, send_from_directory, url_for
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
@@ -235,10 +226,10 @@ def download_dataset(dataset_id):
         resp.set_cookie(
             "download_cookie",
             user_cookie,
-            secure=True,        # Only transmit over HTTPS
-            httponly=True,      # Not accessible to JavaScript (XSS protection)
-            samesite="Lax",     # CSRF protection (or "Strict" for maximum security)
-            max_age=86400 * 30  # Expire after 30 days
+            secure=True,  # Only transmit over HTTPS
+            httponly=True,  # Not accessible to JavaScript (XSS protection)
+            samesite="Lax",  # CSRF protection (or "Strict" for maximum security)
+            max_age=86400 * 30,  # Expire after 30 days
         )
     else:
         resp = send_from_directory(
@@ -291,10 +282,10 @@ def subdomain_index(doi):
     resp.set_cookie(
         "view_cookie",
         user_cookie,
-        secure=True,        # Only transmit over HTTPS
-        httponly=True,      # Not accessible to JavaScript (XSS protection)
-        samesite="Lax",     # CSRF protection
-        max_age=86400 * 30  # Expire after 30 days
+        secure=True,  # Only transmit over HTTPS
+        httponly=True,  # Not accessible to JavaScript (XSS protection)
+        samesite="Lax",  # CSRF protection
+        max_age=86400 * 30,  # Expire after 30 days
     )
 
     return resp
