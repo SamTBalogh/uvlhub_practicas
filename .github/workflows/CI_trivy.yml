@@ -18,9 +18,19 @@ jobs:
 
       - name: Instalar Trivy
         run: |
-          latest_version=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | jq -r '.tag_name')
-          wget "https://github.com/aquasecurity/trivy/releases/download/${latest_version}/trivy_${latest_version:1}_Linux-64bit.deb"
-          sudo dpkg -i "trivy_${latest_version:1}_Linux-64bit.deb"
+          # Try to get latest version from API, fallback to known stable version
+          latest_version=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | jq -r '.tag_name // empty')
+          if [ -z "$latest_version" ]; then
+            latest_version="v0.68.2"
+          fi
+          echo "Using Trivy version: $latest_version"
+          
+          # Remove 'v' prefix for filename
+          version_num="${latest_version#v}"
+          
+          # Download and install
+          wget -q "https://github.com/aquasecurity/trivy/releases/download/${latest_version}/trivy_${version_num}_Linux-64bit.deb"
+          sudo dpkg -i "trivy_${version_num}_Linux-64bit.deb"
 
       - name: Ejecutar escaneo Trivy en archivos IaC (JSON)
         run: |

@@ -3,6 +3,11 @@ from locust import HttpUser, TaskSet, task
 from core.environment.host import get_host_for_locust_testing
 from core.locust.common import fake, get_csrf_token
 
+# Endpoint constants
+LOGIN_ENDPOINT = "/login"
+SIGNUP_ENDPOINT = "/signup"
+LOGOUT_ENDPOINT = "/logout"
+
 
 class SignupBehavior(TaskSet):
     def on_start(self):
@@ -10,11 +15,11 @@ class SignupBehavior(TaskSet):
 
     @task
     def signup(self):
-        response = self.client.get("/signup")
+        response = self.client.get(SIGNUP_ENDPOINT)
         csrf_token = get_csrf_token(response)
 
         response = self.client.post(
-            "/signup", data={"email": fake.email(), "password": fake.password(), "csrf_token": csrf_token}
+            SIGNUP_ENDPOINT, data={"email": fake.email(), "password": fake.password(), "csrf_token": csrf_token}
         )
         if response.status_code != 200:
             print(f"Signup failed: {response.status_code}")
@@ -27,22 +32,22 @@ class LoginBehavior(TaskSet):
 
     @task
     def ensure_logged_out(self):
-        response = self.client.get("/logout")
+        response = self.client.get(LOGOUT_ENDPOINT)
         if response.status_code != 200:
             print(f"Logout failed or no active session: {response.status_code}")
 
     @task
     def login(self):
-        response = self.client.get("/login")
+        response = self.client.get(LOGIN_ENDPOINT)
         if response.status_code != 200 or "Login" not in response.text:
             print("Already logged in or unexpected response, redirecting to logout")
             self.ensure_logged_out()
-            response = self.client.get("/login")
+            response = self.client.get(LOGIN_ENDPOINT)
 
         csrf_token = get_csrf_token(response)
 
         response = self.client.post(
-            "/login", data={"email": "user1@example.com", "password": "1234", "csrf_token": csrf_token}
+            LOGIN_ENDPOINT, data={"email": "user1@example.com", "password": "1234", "csrf_token": csrf_token}
         )
         if response.status_code != 200:
             print(f"Login failed: {response.status_code}")

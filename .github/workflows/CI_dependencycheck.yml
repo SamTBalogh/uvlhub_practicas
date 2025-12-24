@@ -21,10 +21,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create Dependency-Check properties
+        env:
+          OSSINDEX_USER: ${{ secrets.OSSINDEX_USERNAME }}
+          OSSINDEX_PASSWORD: ${{ secrets.OSSINDEX_TOKEN }}
         run: |
-          cat > dependency-check.properties <<'EOF'
-          analyzer.ossindex.user=${{ secrets.OSSINDEX_USERNAME }}
-          analyzer.ossindex.password=${{ secrets.OSSINDEX_TOKEN }}
+          cat > dependency-check.properties <<EOF
+          analyzer.ossindex.user=${OSSINDEX_USER}
+          analyzer.ossindex.password=${OSSINDEX_PASSWORD}
           EOF
 
       - name: Run OWASP Dependency-Check (SARIF)

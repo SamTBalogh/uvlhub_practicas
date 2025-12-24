@@ -1,10 +1,10 @@
 function test_zenodo_connection() {
-    var xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.open('GET', '/zenodo/test', true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
-            var response = JSON.parse(xhr.responseText);
+            const response = JSON.parse(xhr.responseText);
             if (!response.success) {
                 document.getElementById("test_zenodo_connection_error").style.display = "block";
                 console.log(response);
