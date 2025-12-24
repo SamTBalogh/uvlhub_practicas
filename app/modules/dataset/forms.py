@@ -12,7 +12,9 @@ class AuthorForm(FlaskForm):
     gnd = StringField("GND")
 
     class Meta:
-        csrf = False  # disable CSRF because is subform
+        # CSRF token is handled by parent form (DataSetForm), not by subforms
+        # Safe: subforms are embedded in parent form which validates CSRF token
+        csrf = False
 
     def get_author(self):
         return {
@@ -37,7 +39,9 @@ class FeatureModelForm(FlaskForm):
     authors = FieldList(FormField(AuthorForm))
 
     class Meta:
-        csrf = False  # disable CSRF because is subform
+        # CSRF token is handled by parent form (DataSetForm), not by subforms
+        # Safe: subforms are embedded in parent form which validates CSRF token
+        csrf = False
 
     def get_authors(self):
         return [author.get_author() for author in self.authors]
