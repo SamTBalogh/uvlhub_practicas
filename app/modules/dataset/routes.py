@@ -18,6 +18,7 @@ from flask import (
     url_for,
 )
 from flask_login import current_user, login_required
+from werkzeug.utils import secure_filename
 
 from app.modules.dataset import dataset_bp
 from app.modules.dataset.forms import DataSetForm
@@ -122,25 +123,31 @@ def upload():
     file = request.files["file"]
     temp_folder = current_user.temp_folder()
 
-    if not file or not file.filename.endswith(".uvl"):
+    if not file or not file.filename:
+        return jsonify({"message": "No valid file"}), 400
+
+    # Sanitize filename to prevent path traversal attacks
+    original_filename = secure_filename(file.filename)
+    
+    if not original_filename or not original_filename.endswith(".uvl"):
         return jsonify({"message": "No valid file"}), 400
 
     # create temp folder
     if not os.path.exists(temp_folder):
         os.makedirs(temp_folder)
 
-    file_path = os.path.join(temp_folder, file.filename)
+    file_path = os.path.join(temp_folder, original_filename)
 
     if os.path.exists(file_path):
         # Generate unique filename (by recursion)
-        base_name, extension = os.path.splitext(file.filename)
+        base_name, extension = os.path.splitext(original_filename)
         i = 1
         while os.path.exists(os.path.join(temp_folder, f"{base_name} ({i}){extension}")):
             i += 1
         new_filename = f"{base_name} ({i}){extension}"
         file_path = os.path.join(temp_folder, new_filename)
     else:
-        new_filename = file.filename
+        new_filename = original_filename
 
     try:
         file.save(file_path)
